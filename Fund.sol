@@ -5,6 +5,7 @@ contract CrowdFund {
 
     address public Manager;
     uint public Projectno =0;
+    uint[] public CompletedProjectID;
     mapping(uint=>Project) public ProjectLocation;
 
     constructor() {
@@ -29,12 +30,9 @@ contract CrowdFund {
     }
 
         modifier OnlyManager() {
-
              require(msg.sender==Manager , "Only Manager is Allowed");
         _;
         }
-
-    
 
     function CreateProject(string memory _name , string memory _description ,uint _requiredamount, uint _deadline , uint _miniamount , address payable  _receipt ) public OnlyManager {
 
@@ -51,20 +49,22 @@ contract CrowdFund {
 
     function SendFund(uint _ProjectID) payable public  {
       Project storage OldProject =  ProjectLocation[_ProjectID];
+      require(OldProject.MinimumContribution <= msg.value , "Minimum Contribution Requirement No met ");
       require(OldProject.Deadline > block.timestamp , "Opss The Time is Over For Contribution");
-      require(OldProject.RequiredAmount );
+      require(OldProject.AmountCollected < OldProject.RequiredAmount ,"Requirement is Fullfiled For This Project" );
+      require(OldProject.Completed == false , "Project is Completed");
 
+      if(OldProject.Contributors[msg.sender]==0)
+      {
+          OldProject.NoofContributors++;
+      }
+      OldProject.Contributors[msg.sender]+= msg.value;
+      OldProject.AmountCollected+=msg.value;
 
-
-
-
-
-
-        
     }
 
+    
 
-   
 
 
     
