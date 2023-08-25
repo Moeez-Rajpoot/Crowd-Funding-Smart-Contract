@@ -6,7 +6,6 @@ contract CrowdFund {
     address public Manager;
     uint public Campaignno =0;
     uint public RemainingCampaign =0;
-    uint[] public CompletedCampaignID;
     mapping(uint=>Campaign) public CampaignLocation;
 
     constructor() {
