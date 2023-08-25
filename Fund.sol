@@ -65,19 +65,24 @@ contract CrowdFund {
 
     function Refund(uint _CampaignID) public  {
         Campaign storage OldCampaign =  CampaignLocation[_CampaignID];
-        require(OldCampaign.Deadline > block.timestamp,"Campaign is Still in Process You Cant Refund Yet");
+        require(Campaignno > 0 ,"There is No Campaign In Process Yet");
+        require(OldCampaign.Deadline < block.timestamp,"Campaign is Still in Process You Cant Refund Yet");
         require(OldCampaign.Contributors[msg.sender]>0,"You are not a Contributor");
-        require(OldCampaign.Completed == true , "The Campaign has been Completed You Cant Refund Now");
+        require(OldCampaign.AmountCollected < OldCampaign.RequiredAmount,"Required Campaign Amount has been Fulfilled Can't Refund Now");
+        require(OldCampaign.Completed == false , "The Campaign has been Completed You Cant Refund Now");
 
         uint RefundAmount = OldCampaign.Contributors[msg.sender];
         OldCampaign.Contributors[msg.sender]=0;
         OldCampaign.NoofContributors--;
         OldCampaign.AmountCollected -= RefundAmount; 
         address payable Refunder = payable(msg.sender);
-        
+        Refunder.transfer(RefundAmount);
 
+    }
 
-        
+    function checkbalance() public view returns (uint){
+
+        return address(this).balance;
     }
 
     
