@@ -4,19 +4,19 @@ pragma solidity 0.8.21;
 contract CrowdFund {
 
     address public Manager;
-    uint public Projectno =0;
-    uint[] public CompletedProjectID;
-    mapping(uint=>Project) public ProjectLocation;
+    uint public Campaignno =0;
+    uint[] public CompletedCampaignID;
+    mapping(uint=>Campaign) public CampaignLocation;
 
     constructor() {
         Manager=msg.sender;
     }
 
-    struct Project{
+    struct Campaign{
 
-        string ProjectName;
+        string CampaignName;
         string Description;
-        uint ProjectId;
+        uint CampaignId;
         uint AmountCollected;
         uint RequiredAmount;
         uint Deadline;
@@ -34,33 +34,50 @@ contract CrowdFund {
         _;
         }
 
-    function CreateProject(string memory _name , string memory _description ,uint _requiredamount, uint _deadline , uint _miniamount , address payable  _receipt ) public OnlyManager {
+    function CreateCampaign(string memory _name , string memory _description ,uint _requiredamount, uint _deadline , uint _miniamount , address payable  _receipt ) public OnlyManager {
 
-        Project storage newProject =  ProjectLocation[Projectno];
-        newProject.ProjectName = _name;
-        newProject.Description = _description;
-        newProject.ProjectId = Projectno;
-        newProject.RequiredAmount = _requiredamount;
-        newProject.Deadline =  block.timestamp + _deadline;
-        newProject.MinimumContribution = _miniamount;
-        newProject.recipient = _receipt;
-        Projectno++;
+        Campaign storage newCampaign =  CampaignLocation[Campaignno];
+        newCampaign.CampaignName = _name;
+        newCampaign.Description = _description;
+        newCampaign.CampaignId = Campaignno;
+        newCampaign.RequiredAmount = _requiredamount;
+        newCampaign.Deadline =  block.timestamp + _deadline;
+        newCampaign.MinimumContribution = _miniamount;
+        newCampaign.recipient = _receipt;
+        Campaignno++;
     }
 
-    function SendFund(uint _ProjectID) payable public  {
-      Project storage OldProject =  ProjectLocation[_ProjectID];
-      require(OldProject.MinimumContribution <= msg.value , "Minimum Contribution Requirement No met ");
-      require(OldProject.Deadline > block.timestamp , "Opss The Time is Over For Contribution");
-      require(OldProject.AmountCollected < OldProject.RequiredAmount ,"Requirement is Fullfiled For This Project" );
-      require(OldProject.Completed == false , "Project is Completed");
+    function SendFund(uint _CampaignID) payable public  {
+      Campaign storage OldCampaign =  CampaignLocation[_CampaignID];
+      require(OldCampaign.MinimumContribution <= msg.value , "Minimum Contribution Requirement No met ");
+      require(OldCampaign.Deadline > block.timestamp , "Opss The Time is Over For Contribution");
+      require(OldCampaign.AmountCollected < OldCampaign.RequiredAmount ,"Requirement is Fullfiled For This Campaign" );
+      require(OldCampaign.Completed == false , "Campaign is Completed");
 
-      if(OldProject.Contributors[msg.sender]==0)
+      if(OldCampaign.Contributors[msg.sender]==0)
       {
-          OldProject.NoofContributors++;
+          OldCampaign.NoofContributors++;
       }
-      OldProject.Contributors[msg.sender]+= msg.value;
-      OldProject.AmountCollected+=msg.value;
+      OldCampaign.Contributors[msg.sender]+= msg.value;
+      OldCampaign.AmountCollected+=msg.value;
 
+    }
+
+    function Refund(uint _CampaignID) public  {
+        Campaign storage OldCampaign =  CampaignLocation[_CampaignID];
+        require(OldCampaign.Deadline > block.timestamp,"Campaign is Still in Process You Cant Refund Yet");
+        require(OldCampaign.Contributors[msg.sender]>0,"You are not a Contributor");
+        require(OldCampaign.Completed == true , "The Campaign has been Completed You Cant Refund Now");
+
+        uint RefundAmount = OldCampaign.Contributors[msg.sender];
+        OldCampaign.Contributors[msg.sender]=0;
+        OldCampaign.NoofContributors--;
+        OldCampaign.AmountCollected -= RefundAmount; 
+        address payable Refunder = payable(msg.sender);
+        
+
+
+        
     }
 
     
