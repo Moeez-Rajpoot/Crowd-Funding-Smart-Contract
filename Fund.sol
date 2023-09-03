@@ -9,7 +9,6 @@ contract CrowdFund {
     mapping(uint=>Campaign) public CampaignLocation;
 
     constructor() {
-        
         Manager=msg.sender;
     }
 
