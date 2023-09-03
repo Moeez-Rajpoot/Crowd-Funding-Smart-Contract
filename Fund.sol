@@ -111,5 +111,7 @@ contract CrowdFund {
     function Check_Contract_balance() public view returns (uint){
 
         return address(this).balance;
-    }    
+    }   
+
+    //Crowd Funding 
 }
